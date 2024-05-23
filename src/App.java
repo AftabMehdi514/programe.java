@@ -1,17 +1,16 @@
 import javax.swing.*;
-import javax.swing.border.Border;
-import javax.swing.text.TableView.TableCell;
-
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
+import java.util.ArrayList;
 public class App implements ActionListener {
     LogInForm logInForm;
     SignUp signUp;
-    private  Student[] students;
-    private Admin[] admins;
-    private Teacher[] teachers;
-    public static String[] departmentNames={"Select your Depatment","CIS","PHYSICS"}, batch={"Select Batch","23-27","24-28"},courses={"Select Course","OOP","DM"};
+    public static boolean logInKey=false;
+    static  ArrayList<Student> students;
+    static ArrayList<Admin> admins;
+    static ArrayList<Teacher> teachers;
+
+    public static String[] departmentNames={"Select your Depatment","CIS","PHYSICS"}, batch={"Select Batch","23-27","24-28"},availablecourses={"Select Course","OOP","DM","sampleCourse"};
     public static JComboBox departmentSelector,batchSelector,courseSelector;
     //Some Utilites
     public static Color bgColor=new Color(30,145,255);
@@ -23,21 +22,79 @@ public class App implements ActionListener {
     public static void showmessage(String n){
     JOptionPane.showMessageDialog(null, n, n, JOptionPane.INFORMATION_MESSAGE);
     }
-    public static void showmessage(String n,String m){
-        JOptionPane.showMessageDialog(null, n+m, n, JOptionPane.INFORMATION_MESSAGE);
-        }
         public static void styleBtn(JButton btn){
-            btn.setForeground(App.fgColor);
-            btn.setBackground(App.bgColor);
-            btn.setFont(App.btnFont);
+            btn.setForeground(fgColor);
+            btn.setBackground(bgColor);
+            btn.setFont(btnFont);
+            btn.setFocusPainted(false);
+            btn.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
+            btn.setContentAreaFilled(false);
+            btn.setOpaque(true);
+    
+            // Adding hover effect
+            btn.addMouseListener(new MouseAdapter() {
+        
+                public void mouseEntered(MouseEvent e) {
+                    btn.setBackground(bgColor.darker());
+                }
+    
+                
+                public void mouseExited(MouseEvent e) {
+                    btn.setBackground(bgColor);
+                }
+            });
+    
+            // Adding click animation
+            btn.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    Timer timer = new Timer(20, null);
+                    timer.addActionListener(new ActionListener() {
+                        private float alpha = 1.0f;
+                        private boolean fadingOut = true;
+    
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            if (fadingOut) {
+                                alpha -= 0.1f;
+                                if (alpha <= 0.5f) {
+                                    fadingOut = false;
+                                }
+                            } else {
+                                alpha += 0.1f;
+                                if (alpha >= 1.0f) {
+                                    timer.stop();
+                                }
+                            }
+                            btn.setBackground(new Color(bgColor.getRed(), bgColor.getGreen(), bgColor.getBlue(), (int) (alpha * 255)));
+                        }
+                    });
+                    timer.start();
+                }
+            });
+    
         }
-       
-    //PrivateComponets of Class
+        public static void clickedStyleBtn(JButton btn){
+            btn.setForeground(Color.yellow);
+            btn.setBackground(new Color(0,150,0));
+        }
+        public static void clickedStyleBtn2(JButton btn){
+            btn.setForeground(Color.yellow);
+            btn.setBackground(new Color(150,0,0));
+        }
+        public static void btnStyleBtn3(JButton btn){
+            btn.setForeground(Color.WHITE);
+            btn.setBackground(new Color(00,0,150));
+            btn.setFont(new Font("Arial", Font.BOLD, 14));
+        }
+        public static void styleCombo(JComboBox c){
+            c.setBackground(Color.WHITE);
+            c.setPreferredSize(new Dimension(400, 30)); 
+        }
     private JButton btnAdmin,btnTeacher,btnStudent;
     private String  role;
     public static Dimension buttonSize,panelSize;
     public static GridBagConstraints gbc,containerGbc;
-    //creating a Universal Frame
     public static JFrame frm;
     public static JPanel panel,askPanel,container;
     
@@ -46,14 +103,17 @@ public class App implements ActionListener {
        
 
     }
-    App(Student[] students,Admin[] admins,Teacher[] teachers){
-        this.students=students;
-        this.admins=admins;
-        this.teachers=teachers;
-        frm = new JFrame("Student Registration Portal");
+    App(ArrayList<Student> students, ArrayList<Admin> admins, ArrayList<Teacher> teachers) {
+        this.students = students;
+        this.admins = admins;
+        this.teachers = teachers;
+    
+    
+       frm = new JFrame("Student Registration Portal");
        frm.setSize(900, 550);
        frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-       frm.getContentPane().setBackground(new Color(200, 200, 200)); // Set background color for the frame
+       frm.getContentPane().setBackground(new Color(200, 200, 200)); 
+     
        /* ComboBoxes */
        departmentSelector=new JComboBox<>(App.departmentNames);
        departmentSelector.setMaximumRowCount(7);
@@ -81,13 +141,14 @@ public class App implements ActionListener {
 
        // Increase button size
         buttonSize = new Dimension(150, 50);
-        panelSize=new Dimension(400, 400);
+       panelSize=new Dimension(400, 400);
        btnAdmin.setPreferredSize(buttonSize);
        btnTeacher.setPreferredSize(buttonSize);
        btnStudent.setPreferredSize(buttonSize);
        btnAdmin.setFont(App.boldFont);
        btnTeacher.setFont(App.boldFont);
        btnStudent.setFont(App.boldFont);
+      // App.clickedStyleBtn2(btnAdmin);
        //Assigning actions
        btnAdmin.addActionListener(this);
        btnStudent.addActionListener(this);
@@ -160,6 +221,7 @@ public class App implements ActionListener {
        //......................LogIn Page...........................//
 
        //............................................................
+         
        
        frm.setVisible(true);
     }
@@ -192,26 +254,41 @@ public class App implements ActionListener {
        }
        else if(e.getSource().equals(signInBtn)){
           showmessage("Your Logging In as a "+role+"!");
+          askPanel.setVisible(false);
             logInForm=new LogInForm(students,teachers,admins,role);
        }
        else if(e.getSource().equals(signUpBtn)){
+        App.showmessage("already the length is "+students.size());
+        System.out.println("Sign up clicked new the array lenght is"+students.size());
         showmessage("You are singing UP as a "+role+"!");
-            signUp=new SignUp(students,teachers,admins,role);
+        signUp=new SignUp(students,teachers,admins,role);
        
        }
     }
-   /*  class askPanelHandler implements ActionListener{
-           public void actionPerformed(ActionEvent e){
-            if(e.getSource().)
-           }
-    } */
  
     public static void main(String[] args) throws Exception {
-       
-        Student.studentCount=1;Admin.adminCount=1;Teacher.teacherCount=1;
-        Student[] students = new Student[Student.studentCount];
-        Admin[] admins=new Admin[Admin.adminCount];
-        Teacher[] teachers=new Teacher[Teacher.teacherCount];
+        ArrayList<Student> students =new ArrayList<Student>();
+        Student student=new Student("sampleStudent", "abc", "CIS", "2024","email@gmail.com","511123");
+        student.sampleCourses();
+        students.add(student);
+        students.add(new Student("Ali Khan", "ali123", "CIS", "2023", "ali.khan@example.com", "9876543210"));
+        students.add(new Student("Sana Ahmed", "sana456", "CIS", "2022", "sana.ahmed@example.com", "5555555555"));
+        students.add(new Student("Usman Malik", "usman789", "CIS", "2023", "usman.malik@example.com", "1112223333"));
+        students.add(new Student("Ayesha Rahman", "ayeshaABC", "CIS", "2022", "ayesha.rahman@example.com", "9998887777"));
+        students.add(new Student("Fatima Zaman", "fatimaDEF", "CIS", "2024", "fatima.zaman@example.com", "6667778888"));
+     
+
+        Teacher t=new Teacher("", "a");
+        ArrayList<Admin> admins=new ArrayList<Admin>();
+        Admin ad=new Admin("admin", "abc");
+         admins.add(ad);
+        ArrayList<Teacher>teachers=new ArrayList<Teacher>();
+        teachers.add(new Teacher("Numan", "numan@gmail.com", "420", "CIS", "abc") );
+        teachers.add(new Teacher("sampleTeacher", "sampleteacher@example.com", "1234567890", "Mathematics", "password1"));
+        teachers.add(new Teacher("Teacher 2", "teacher2@example.com", "9876543210", "Physics", "password2"));
+        teachers.add(new Teacher("Teacher 3", "teacher3@example.com", "5555555555", "Computer Science", "password3"));
+        teachers.add(new Teacher("Teacher 4", "teacher4@example.com", "1112223333", "History", "password4"));
+        teachers.add(new Teacher("Teacher 5", "teacher5@example.com", "9998887777", "Biology", "password5"));
         App app = new App(students,admins,teachers);
     }
     

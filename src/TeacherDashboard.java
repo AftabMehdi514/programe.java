@@ -1,3 +1,4 @@
+/* int this class there is problem with previewing students for uploadresult and for uploading attendance functionality is correct but little bit problem is still. */
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -9,6 +10,13 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.DataInput;
+import java.io.DataInputStream;
+import java.util.ArrayList;
 
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -21,90 +29,82 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.Border;
 
-public class TeacherDashboard implements ActionListener {
+public class TeacherDashboard implements ActionListener,ItemListener {
       private Teacher teachers;
-      private static Student[] students;
-       private static JPanel lowerPanel,upperPanel,container,panel,lowerViewPanel, linePanel;
-      private static JButton addTeacher,addStudent,approveExamSlip,viewStudents,viewTeachers,viewCourses,assignCourses;
-      private static JLabel label;
-      private static JComboBox courseSelector,batchSelector;
+      private static ArrayList<Student> students;
+      private static Teacher teacher;
+
+       private static JPanel lowerPanel,upperPanel,container,panel,lowerFilterPanel,lowerViewPanel, linePanel;
+      private static JButton uploadAttendance,uploadResult,logOut,viewStudents;
+      private static JComboBox courseSelector,dateSelector;
       private static JButton viewStudentsBtn;
-      private static  JLabel batch,name,deg,btch;
+      private static  JLabel batch,name,deg;
+      private static int selectedCourseIndex,selectedDateIndex,marks;
+     private static JFrame frm;
    // TeacherDashboard(){}
 
-    TeacherDashboard(Student[] students){
+    TeacherDashboard(Teacher teacher,ArrayList<Student> students){
+        this.teacher=teacher;
         this.students=students;
-        JFrame frm = new JFrame("Teacher Dashboard");
+        frm = new JFrame("Teacher Dashboard");
         frm.setSize(App.width, App.height);
         frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frm.setVisible(true);
         /* Panels */
         panel=new JPanel(new GridBagLayout());
         lowerPanel=new JPanel(new FlowLayout(FlowLayout.LEFT, 40, 20));
-       // lowerPanel=new JPanel(new FlowLayout());
-        JPanel lowerFilterPanel=new JPanel();
+         lowerFilterPanel=new JPanel();
         lowerFilterPanel.setBorder(BorderFactory.createTitledBorder("Specify Students here!"));
         /* Combobox */
-        courseSelector=new JComboBox<>(App.courses);
+        courseSelector=new JComboBox<>(App.availablecourses);
         courseSelector.setPreferredSize(new Dimension(400, 30));
-        batchSelector=new JComboBox<>(App.batch);
-        batchSelector.setBackground(Color.white);
+        courseSelector.addItemListener(this);
+        dateSelector=new JComboBox<>(students.get(0).courses[0].date);
+        dateSelector.setBackground(Color.white);
+        dateSelector.addItemListener(this);
         courseSelector.setBackground(Color.WHITE);
-        batchSelector.setPreferredSize(new Dimension(400, 30));
+        dateSelector.setPreferredSize(new Dimension(400, 30));
         /* Buttons */
         viewStudentsBtn=new JButton("View Students");
         App.styleBtn(viewStudentsBtn);
-        viewStudentsBtn.addActionListener(this);
-        lowerFilterPanel.add(new JLabel("Specify Students here!"));
+        lowerFilterPanel.add(new JLabel(""+students.get(0).courses[0].courseAttendanceArray[0][0]));
         
         lowerFilterPanel.add(courseSelector);
-        lowerFilterPanel.add(batchSelector);
-        lowerFilterPanel.add(viewStudentsBtn);
+        lowerFilterPanel.add(dateSelector);
+        //lowerFilterPanel.add(viewStudentsBtn);
         lowerFilterPanel.setBackground(Color.white);
         lowerViewPanel=new JPanel();
-        label=new JLabel("helo");
        
         lowerViewPanel.setBorder(BorderFactory.createTitledBorder("Mark Attendance Here!"));
-       // lowerViewPanel.add();
+      
         lowerViewPanel.setPreferredSize(new Dimension(1100, 500));
-        lowerPanel.add(lowerFilterPanel);
-        lowerPanel.add(lowerViewPanel);
+       /*  lowerPanel.add(lowerFilterPanel);
+        lowerPanel.add(lowerViewPanel); */
 
 
         lowerPanel.setBackground(Color.white);
         lowerPanel.setForeground(Color.black);
+        lowerPanel.setBorder(BorderFactory.createTitledBorder("View Info Panel"));
         upperPanel=new JPanel();
         upperPanel.setBackground(Color.white);
         upperPanel.setForeground(Color.black);
         /* uppper panel stuff ............................................*/
-        addTeacher=new JButton("Add Teacher");
-        addTeacher.setForeground(App.fgColor);addTeacher.setBackground(App.bgColor);
-        addTeacher.setFont(App.btnFont);
-        addStudent=new JButton("Add Student");
-        addStudent.setForeground(App.fgColor);addStudent.setBackground(App.bgColor);
-        addStudent.setFont(App.btnFont);
+        uploadAttendance=new JButton("Upload Attendance");
+        uploadAttendance.setForeground(App.fgColor);uploadAttendance.setBackground(App.bgColor);
+        uploadAttendance.setFont(App.btnFont); uploadAttendance.addActionListener(this);
+        uploadResult=new JButton("Upload Result");
+        uploadResult.setForeground(App.fgColor);uploadResult.setBackground(App.bgColor);
+        uploadResult.setFont(App.btnFont);  uploadResult.addActionListener(this);
         viewStudents=new JButton("View Students");
         viewStudents.setForeground(App.fgColor);viewStudents.setBackground(App.bgColor);
         viewStudents.setFont(App.btnFont);
-        viewTeachers=new JButton("View Teachers");
-        viewTeachers.setForeground(App.fgColor);viewTeachers.setBackground(App.bgColor);
-        viewTeachers.setFont(App.btnFont);
-        viewCourses=new JButton("View Courses");
-        viewCourses.setForeground(App.fgColor);viewCourses.setBackground(App.bgColor);
-        viewCourses.setFont(App.btnFont);
-        assignCourses=new JButton("Assign Courses");
-        assignCourses.setForeground(App.fgColor);assignCourses.setBackground(App.bgColor);
-        assignCourses.setFont(App.btnFont);
-        approveExamSlip=new JButton("Approve Exam Slip");
-        approveExamSlip.setForeground(App.fgColor);approveExamSlip.setBackground(App.bgColor);
-        approveExamSlip.setFont(App.btnFont);
-        upperPanel.add(addTeacher);
-        upperPanel.add(viewTeachers);
-        upperPanel.add(addStudent);
-        upperPanel.add(viewStudents);
-        upperPanel.add(viewCourses);
-        upperPanel.add(assignCourses);
-        upperPanel.add(approveExamSlip);
+        logOut=new JButton("Logout");
+        logOut.setForeground(App.fgColor);logOut.setBackground(App.bgColor);
+        logOut.setFont(App.btnFont);logOut.addActionListener(this);
+        upperPanel.add(uploadAttendance);
+        upperPanel.add(uploadResult);
+        upperPanel.add(logOut);
+       upperPanel.setBorder(BorderFactory.createTitledBorder("Option Panel"));
    
 
        
@@ -123,65 +123,190 @@ public class TeacherDashboard implements ActionListener {
         Gbc.gridx=0;
         Gbc.gridy=0;
         container.add(panel,Gbc);
-        container.setBorder(BorderFactory.createLineBorder(Color.GREEN));
         frm.add(container,BorderLayout.NORTH);
         viewStudents.addActionListener(this);
-       // App.showmessage("teacher Receiver", teacher.userName);
         
     }
      public  void actionPerformed(ActionEvent e ){
-        if(e.getSource().equals(viewStudentsBtn)){
-         for(Student s:students){
-         name=new JLabel(s.userName);
-         batch=new JLabel(s.batch);
-         deg=new JLabel(s.degProgram);
-          JButton  presentBtn=new JButton("Present");
-          JButton absentBtn=new JButton("Absent");
-         Dimension dim=new Dimension(100, 30);
-         name.setPreferredSize(dim);
-         batch.setPreferredSize(dim);
-         deg.setPreferredSize(new Dimension(500, 30));
-         linePanel=new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
-         linePanel.setBackground(Color.white);
-         linePanel.setPreferredSize(new Dimension(1000, 40));
-         linePanel.add(batch);
-         linePanel.add(name);
-         linePanel.add(deg);
-         App.styleBtn(presentBtn); 
-         App.styleBtn(absentBtn);
-         linePanel.add(presentBtn);  presentBtn.addActionListener(new buttonHandler(presentBtn,absentBtn));
-         linePanel.add(absentBtn);  absentBtn.addActionListener(new buttonHandler(presentBtn, absentBtn));
-         lowerViewPanel.add(linePanel);
-         lowerViewPanel.revalidate();
-        
-         
+      if(e.getSource().equals(logOut)){
+        frm.dispose();
+        App app=new App(App.students, App.admins, App.teachers);
+      }
+      if (e.getSource().equals(uploadResult)) {
+        lowerFilterPanel.removeAll();
+        lowerFilterPanel.add(courseSelector);
+        JButton viewStudentsBtn=new JButton("View Students");
+        lowerFilterPanel.add(viewStudentsBtn);
+        App.styleBtn(viewStudentsBtn);
+        lowerViewPanel.removeAll();
+        lowerViewPanel.setBorder(BorderFactory.createTitledBorder("Student List is here"));
+        lowerPanel.add(lowerFilterPanel);
+        viewStudentsBtn.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e){
+            for(Student s:students){
+              JTextField marksTf=new JTextField(2);
+              JButton addMarks=new JButton("Add Marks"); App.styleBtn(addMarks);
+              addMarks.addKeyListener(new KeyListener() {
+
+                @Override
+                public void keyTyped(KeyEvent e) {
+                  // 
+                  throw new UnsupportedOperationException("Unimplemented method 'keyTyped'");
+                }
+
+                @Override
+                public void keyPressed(KeyEvent e) {
                 
-      } 
+                           
+                  throw new UnsupportedOperationException("Unimplemented method 'keyPressed'");
+                }
+
+                @Override
+                public void keyReleased(KeyEvent e) {
+                  
+                  throw new UnsupportedOperationException("Unimplemented method 'keyReleased'");
+                }
+                
+              });
+              addMarks.addActionListener(new ActionListener() {
+               public  void actionPerformed(ActionEvent e){
+                App.showmessage("Still underDevelopment");
+                    
+                }
+              });
+              name=new JLabel(s.userName);
+              batch=new JLabel(s.batch);
+              deg=new JLabel(s.degProgram);
+              Dimension dim=new Dimension(100, 30);
+              name.setPreferredSize(dim);
+              batch.setPreferredSize(dim);
+              deg.setPreferredSize(new Dimension(430, 30));
+              linePanel=new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+              linePanel.setBackground(Color.white);
+              linePanel.setPreferredSize(new Dimension(1000, 40));
+              linePanel.add(batch);
+              linePanel.add(name);
+              linePanel.add(deg);
+              linePanel.add(marksTf);
+              linePanel.add(addMarks);
+              lowerViewPanel.add(linePanel);
+              lowerViewPanel.revalidate();        
+           } 
+
+            }}
+        );
+        lowerPanel.add(lowerViewPanel);
+        lowerPanel.revalidate();
+      }
+      if(e.getSource().equals(uploadAttendance)){
+        lowerFilterPanel.removeAll();
+        lowerFilterPanel.add(courseSelector);
+        lowerFilterPanel.add(dateSelector);
+        
+        lowerViewPanel.removeAll();
+        lowerViewPanel.revalidate();
+        JButton showStudents=new JButton("Show Students");
+        lowerFilterPanel.add(showStudents);
+        App.styleBtn(showStudents);
+        lowerViewPanel.revalidate();
+        showStudents.addActionListener(new ActionListener() {
+          public void actionPerformed(ActionEvent e){
+            for(Student s:students){
+              boolean hasreg=false;
+              for(int i=0;i<s.courses.length;i++){
+                  if(App.availablecourses[selectedCourseIndex+1].equals(s.courses[i].courseName))
+                  hasreg=true;break;
+              }
+              if(hasreg){
+                name=new JLabel(s.userName);
+                batch=new JLabel(s.batch);
+                deg=new JLabel(s.degProgram);
+               JButton  presentBtn=new JButton("Present");
+               JButton absentBtn=new JButton("Absent");
+               JButton resetBtn=new JButton("Reset");
+       
+                Dimension dim=new Dimension(100, 30);
+                name.setPreferredSize(dim);
+                batch.setPreferredSize(dim);
+                deg.setPreferredSize(new Dimension(430, 30));
+                linePanel=new JPanel(new FlowLayout(FlowLayout.LEFT, 20, 5));
+                linePanel.setBackground(Color.white);
+                linePanel.setPreferredSize(new Dimension(1000, 40));
+                linePanel.add(batch);
+                linePanel.add(name);
+                linePanel.add(deg);
+       
+                App.styleBtn(presentBtn); 
+                App.styleBtn(absentBtn);
+                App.styleBtn(resetBtn);
+                linePanel.add(presentBtn);  presentBtn.addActionListener(new buttonHandler(presentBtn,absentBtn,resetBtn,s));
+                linePanel.add(absentBtn);  absentBtn.addActionListener(new buttonHandler(presentBtn, absentBtn,resetBtn,s));
+                linePanel.add(resetBtn); resetBtn.addActionListener(new buttonHandler(presentBtn, absentBtn, resetBtn, s));
+                lowerViewPanel.add(linePanel);
+                lowerViewPanel.revalidate();  
+              }
+              else {
+                continue;
+              }
+                 
+         } 
+        
+       
+          }
+        });
+          lowerPanel.add(lowerFilterPanel);
+          lowerPanel.add(lowerViewPanel);
+          lowerPanel.revalidate();
+        
         }
+
     }
-    public static void main(String[] args) {
+    public void itemStateChanged(ItemEvent e){
+      if(e.getSource().equals(courseSelector)){
+           selectedCourseIndex=courseSelector.getSelectedIndex()-1;
+      }
+      else if(e.getSource().equals(dateSelector)){
+         selectedDateIndex=dateSelector.getSelectedIndex()-1;
+        }
+      
+    }
+  /*   public static void main(String[] args) {
         Teacher teacher=new Teacher("Numan", "123");
         Student[] students=new Student[2];
          students[0]=new Student("Aftab","123","CIS","23-27");
          students[1]=new Student("Ahmad", "abc","Physics","24-28");
         TeacherDashboard TeacherDashboard=new TeacherDashboard(students);
 
-    }
+    }  */
      class buttonHandler implements ActionListener{
-       private JButton presentBtn,absentBtn;
-       buttonHandler(JButton pBtn,JButton aBtn){
+       private JButton presentBtn,absentBtn,resetBtn;
+       private Student student;
+       buttonHandler(JButton pBtn,JButton aBtn,JButton r,Student s){
+         this.student=s;
+         this.resetBtn=r;
          this.presentBtn=pBtn;
          this.absentBtn=aBtn;
        }
        public void actionPerformed(ActionEvent e) {
           if(e.getSource().equals(presentBtn)){
-            App.showmessage("I am present");
+            student.courses[selectedCourseIndex].courseAttendanceArray[selectedDateIndex][2]="Present";
+            App.clickedStyleBtn(presentBtn);
+            absentBtn.setVisible(false);
           }
          else if(e.getSource().equals(absentBtn)){
-            App.showmessage("I am absent");
-            //Ta ta this is amazing//
-          }
-           
+               student.courses[selectedCourseIndex].courseAttendanceArray[selectedDateIndex][2]="Absent";
+               App.clickedStyleBtn2(absentBtn);
+               presentBtn.setVisible(false);
+            
+          } 
+         else if(e.getSource().equals(resetBtn)) { 
+              student.courses[selectedCourseIndex].courseAttendanceArray[selectedDateIndex][2]="";
+              App.styleBtn(presentBtn);
+              App.styleBtn(absentBtn);
+              absentBtn.setVisible(true);
+              presentBtn.setVisible(true);
+         } 
        }
+       
     }
 }
