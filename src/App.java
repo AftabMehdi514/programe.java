@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ public class App implements ActionListener {
     static ArrayList<Admin> admins;
     static ArrayList<Teacher> teachers;
 
-    public static String[] departmentNames={"Select your Depatment","CIS","PHYSICS"}, batch={"Select Batch","23-27","24-28"},availablecourses={"Select Course","OOP","DM","sampleCourse"};
+    public static String[] departmentNames={"Select your Depatment","CIS","PHYSICS"}, batch={"Select Batch","23-27","24-28"},availablecourses={"Select Course","OOP","DM","Course 1","Course 2","Course 3","Course 4","Course 5"};
     public static JComboBox departmentSelector,batchSelector,courseSelector;
     //Some Utilites
     public static Color bgColor=new Color(30,145,255);
@@ -21,6 +22,7 @@ public class App implements ActionListener {
     public static int height=720;
     public static void showmessage(String n){
     JOptionPane.showMessageDialog(null, n, n, JOptionPane.INFORMATION_MESSAGE);
+
     }
         public static void styleBtn(JButton btn){
             btn.setForeground(fgColor);
@@ -91,7 +93,10 @@ public class App implements ActionListener {
             c.setBackground(Color.WHITE);
             c.setPreferredSize(new Dimension(400, 30)); 
         }
-    private JButton btnAdmin,btnTeacher,btnStudent;
+        public static void registerStudents(ArrayList<Student>students){
+
+        }
+        private JButton btnAdmin,btnTeacher,btnStudent;
     private String  role;
     public static Dimension buttonSize,panelSize;
     public static GridBagConstraints gbc,containerGbc;
@@ -108,7 +113,6 @@ public class App implements ActionListener {
         this.admins = admins;
         this.teachers = teachers;
     
-    
        frm = new JFrame("Student Registration Portal");
        frm.setSize(900, 550);
        frm.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -120,6 +124,10 @@ public class App implements ActionListener {
        departmentSelector.setName("Select Department");
        departmentSelector.setPreferredSize(new Dimension(400, 50));
        departmentSelector.setAutoscrolls(true);
+       batchSelector=new JComboBox<>(App.batch);
+       batchSelector.setName("Select your Batch");
+       batchSelector.setBorder(BorderFactory.createTitledBorder("Select Your Batch"));
+       batchSelector.setPreferredSize(new Dimension(200, 50));
       
 
       
@@ -217,12 +225,6 @@ public class App implements ActionListener {
        askPanel.add(back,gbc);
        //container.add(askPanel);
        askPanel.setVisible(true);
-       //.....................................................................
-       //......................LogIn Page...........................//
-
-       //............................................................
-         
-       
        frm.setVisible(true);
     }
     public  void  actionPerformed(ActionEvent e){
@@ -258,8 +260,6 @@ public class App implements ActionListener {
             logInForm=new LogInForm(students,teachers,admins,role);
        }
        else if(e.getSource().equals(signUpBtn)){
-        App.showmessage("already the length is "+students.size());
-        System.out.println("Sign up clicked new the array lenght is"+students.size());
         showmessage("You are singing UP as a "+role+"!");
         signUp=new SignUp(students,teachers,admins,role);
        
@@ -269,9 +269,9 @@ public class App implements ActionListener {
     public static void main(String[] args) throws Exception {
         ArrayList<Student> students =new ArrayList<Student>();
         Student student=new Student("sampleStudent", "abc", "CIS", "2024","email@gmail.com","511123");
-        student.sampleCourses();
         students.add(student);
         students.add(new Student("Ali Khan", "ali123", "CIS", "2023", "ali.khan@example.com", "9876543210"));
+     
         students.add(new Student("Sana Ahmed", "sana456", "CIS", "2022", "sana.ahmed@example.com", "5555555555"));
         students.add(new Student("Usman Malik", "usman789", "CIS", "2023", "usman.malik@example.com", "1112223333"));
         students.add(new Student("Ayesha Rahman", "ayeshaABC", "CIS", "2022", "ayesha.rahman@example.com", "9998887777"));

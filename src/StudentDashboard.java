@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 
 public class StudentDashboard implements ActionListener {
     private  Student student;
@@ -78,12 +79,12 @@ public class StudentDashboard implements ActionListener {
         viewPanel=new JPanel(); 
         viewPanel.setBorder(BorderFactory.createTitledBorder("View Panel"));
       //....................................................................///
-       Student.initializeAvaiableCourses();
+       /* Student.initializeAvaiableCourses(); */
        courseSelector=new JComboBox<>(Student.availableCourses);
        App.styleCombo(courseSelector);
        selectCourse=new JComboBox<>(Student.availableCourses);
        App.styleCombo(selectCourse);
-        selectCourse.addActionListener(this);
+       selectCourse.addActionListener(this);
        
         //,,,,,,,,,,,,,,Course Enrollment Panel,,,,,,,,,,,,,,,,,,,,,//
         
@@ -131,7 +132,7 @@ public class StudentDashboard implements ActionListener {
        manuPanel.add(attendance);
        manuPanel.add(admitSlip);
        manuPanel.add(policyForCheating);
-       manuPanel.add(printChalan);
+       manuPanel.add(printChalan);printChalan.addActionListener(this);
        manuPanel.add(financialAssistance);
        manuPanel.add(logOut); logOut.addActionListener(this);
        
@@ -141,8 +142,12 @@ public class StudentDashboard implements ActionListener {
         pane.add(manuPanel ,BorderLayout.WEST);
         pane.add(viewPanel,BorderLayout.CENTER);
         frm.setVisible(true);
+        welcomePanel(student);
     }
     public  void  actionPerformed(ActionEvent e){
+      if(e.getSource().equals(printChalan)){
+            createChalanPanel(student);
+      }
      if(e.getSource().equals(courseEnroll)){
       createViewEnrollCourses(student);
 
@@ -154,25 +159,26 @@ public class StudentDashboard implements ActionListener {
           enrollmentPanel.setBorder(BorderFactory.createTitledBorder("Enrollment Completed"));
           confirmEnrollment.setText("Enrollment successfull!");
         } else{
-          student.courses[enrolledCourseCount]=Student.availableCourses[selectCourse.getSelectedIndex()];
-        
-          enrolledCourses.append("  "+(enrolledCourseCount+1)+".   "+student.courses[enrolledCourseCount].courseName+" Enrolled Succefully"+"\n");
-         
-          enrolledCourseCount++;
-        }
-     
-        
+          if(!(selectCourse.getSelectedIndex()==0)){
+            student.courses[enrolledCourseCount]=Student.availableCourses[selectCourse.getSelectedIndex()];
+            App.showmessage("Mr."+student.userName+"Successfully enrolled Course"+student.courses[enrolledCourseCount].courseName);
+           enrolledCourses.append("  "+(enrolledCourseCount+1)+".   "+student.courses[enrolledCourseCount].courseName+" Enrolled Succefully"+"\n");
+          
+           enrolledCourseCount++;
+          }
+          else {App.showmessage("Please Select Course");}
+          
+        }   
 
      }
      if(e.getSource().equals(attendance)){
-      App.showmessage("view attendance clickedd");
-
       viewPanel.removeAll();
       viewPanel.add(viewAttendancePanel);
       viewPanel.revalidate();
       viewPanel.repaint();
      }
      if(e.getSource().equals(viewAttendance)){
+      App.showmessage("Your Selected Course is "+student.courses[courseSelector.getSelectedIndex()-1].courseName);
       createUpdateAttendancePanel(student); 
      }
      if(e.getSource().equals(logOut)){
@@ -183,8 +189,8 @@ public class StudentDashboard implements ActionListener {
     public static void createUpdateAttendancePanel(Student student){
       viewPanel.removeAll();
       Course tempCourse=student.courses[courseSelector.getSelectedIndex()-1];
-      App.showmessage(tempCourse.courseName);
          String temp=" "; 
+         attendanceTextArea.setText(" ");
          attendanceTextArea.append("  Date                             "+"Course          "+"Attendance        "  + "\n");
          student.fillAttendanceRecord();
         for(int i=0;i<tempCourse.courseAttendanceArray.length;i++){
@@ -291,12 +297,109 @@ public class StudentDashboard implements ActionListener {
       viewPanel.revalidate();
       viewPanel.repaint();
   }
+    public static void createChalanPanel(Student student) {
+    viewPanel.removeAll();
 
-  
-  /*   public static void main(String[] args) {
-      Student s=new Student("Aftab", "123");
-        StudentDashboard sb=new StudentDashboard(s);
-    } 
+    // Create a text area to display the sample chalan
+    JTextArea chalanTextArea = new JTextArea();
+    chalanTextArea.setFont(new Font("Monospaced", Font.PLAIN, 14)); // Set font to monospaced for better alignment
+
+    String chalanText = String.format(
+            "                        Sample Bank Chalan\n\n" +
+            "Bank:                  Sample Bank Ltd.\n" +
+            "Account No:            1234567890\n" +
+            "Branch Code:           00123\n" +
+            "---------------------------------------------------------\n" +
+            "Student Name:          %s\n" +
+            "Semester:              %d\n" +
+            "Amount Due:            PKR %,.2f\n" +
+            "Due Date:              %s\n" +
+            "---------------------------------------------------------\n\n" +
+            "Please make the payment before the due date.\n" +
+            "Failure to do so may result in late fee charges.\n",
+            student.userName, 1, 103000.00, "14 September 2023"
+    );
+
+    chalanTextArea.setText(chalanText);
+    chalanTextArea.setEditable(false);
+    chalanTextArea.setCaretPosition(0);
+
+    // Create a confirm button
+    JButton confirmButton = new JButton("Confirm Payment");
+    App.styleBtn(confirmButton); // Assuming App.styleBtn applies some styling
+
+    // Add action listener to the button
+    confirmButton.addActionListener(new ActionListener() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            int response = JOptionPane.showConfirmDialog(
+                    null,
+                    "Are you sure you want to confirm the payment?",
+                    "Confirm Payment",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.QUESTION_MESSAGE
+            );
+            if (response == JOptionPane.YES_OPTION) {
+                student.paidDues = true;
+                JOptionPane.showMessageDialog(null, "Payment Confirmed", "Success", JOptionPane.INFORMATION_MESSAGE);
+            }
+        }
+    });
+
+    // Create a panel to hold the text area and the button
+    JPanel chalanPanel = new JPanel(new BorderLayout(10, 10));
+    chalanPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Add padding around the panel
+    chalanPanel.add(new JScrollPane(chalanTextArea), BorderLayout.CENTER);
+    chalanPanel.add(confirmButton, BorderLayout.SOUTH);
+
+    // Add the chalan panel to the view panel and refresh the view
+    viewPanel.add(chalanPanel);
+    viewPanel.revalidate();
+    viewPanel.repaint();
+}
+    public static void welcomePanel(Student student) {
+            viewPanel.removeAll();
+
+            JLabel headerLabel = new JLabel("Welcome to Student Registration Portal", JLabel.CENTER);
+            headerLabel.setFont(new Font("Arial", Font.BOLD, 26));
+            headerLabel.setForeground(new Color(70, 130, 180)); // Steel blue color for the header
+
+            JPanel infoPanel = new JPanel(new GridLayout(0, 1, 10, 10));
+            infoPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Padding around the panel
+
+            JLabel nameLabel = new JLabel("Student Name: " + student.userName);
+            nameLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            nameLabel.setForeground(new Color(25, 25, 112)); // Midnight blue color for text
+
+            JLabel batchLabel = new JLabel("Batch: " + student.batch);
+            batchLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            batchLabel.setForeground(new Color(25, 25, 112));
+
+            JLabel departmentLabel = new JLabel("Department: " + student.degProgram);
+            departmentLabel.setFont(new Font("Arial", Font.PLAIN, 20));
+            departmentLabel.setForeground(new Color(25, 25, 112));
+
+            infoPanel.add(nameLabel);
+            infoPanel.add(batchLabel);
+            infoPanel.add(departmentLabel);
+
+            JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+            mainPanel.setBorder(BorderFactory.createLineBorder(new Color(70, 130, 180), 3)); // Border with steel blue color
+            mainPanel.setBackground(new Color(240, 248, 255)); // Light blue background
+            mainPanel.add(headerLabel, BorderLayout.NORTH);
+            mainPanel.add(infoPanel, BorderLayout.CENTER);
+
+            viewPanel.add(mainPanel);
+            viewPanel.revalidate();
+            viewPanel.repaint();
+}
+    
+
+/*     public static void main(String[] args) {
+      Student s=new Student("a", "123", "cis", "2023", "afai", "0454");
+       StudentDashboard sb=new StudentDashboard(s);
+      
+    }  */
    
-  */
+ 
 }

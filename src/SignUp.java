@@ -6,13 +6,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 public class SignUp implements ActionListener,ItemListener {
     private static ArrayList<Student> students;
 private static ArrayList<Teacher> teachers;
 private static ArrayList<Admin> admins;
 private String role;
-private String department;
+private String department,studentBatch;
 JLabel nameL, pwdL, confirmPwdL;
 JTextField nameTF;
 JPasswordField pwdTf,confirmPwdTf;
@@ -58,6 +60,23 @@ SignUp(ArrayList<Student> students, ArrayList<Teacher> teachers, ArrayList<Admin
          pwdTf=new JPasswordField(20);pwdTf.setFont(App.boldFont);
          confirmPwdTf=new JPasswordField(20);
          ;confirmPwdTf.setFont(App.boldFont);
+        confirmPwdTf.addKeyListener(new KeyListener() {
+            @Override
+            public void keyPressed(KeyEvent e) {
+                if(e.getKeyCode()==e.VK_ENTER)
+                actionPerformed(null);
+            }
+            @Override
+            public void keyReleased(KeyEvent e) {
+                // TODO Auto-generated method stub
+                
+            }
+            @Override
+            public void keyTyped(KeyEvent e) {
+                // TODO Auto-generated method stub
+                
+            }
+        });
          SignUpButton=new JButton("Sign Up");
          SignUpButton.setForeground(App.fgColor); SignUpButton.setBackground(Color.BLACK);
          SignUpButton.setFont(App.boldFont);
@@ -79,6 +98,11 @@ SignUp(ArrayList<Student> students, ArrayList<Teacher> teachers, ArrayList<Admin
             panel.add(App.departmentSelector);
             App.departmentSelector.addItemListener(this);
          }
+         if(role.equals("Student")){
+           gbc.gridx=1;
+           panel.add(App.batchSelector);
+           App.batchSelector.addItemListener(this);
+         }
         
          JPanel regJPanel=new JPanel();
          regJPanel.add(SignUpButton);
@@ -94,9 +118,17 @@ SignUp(ArrayList<Student> students, ArrayList<Teacher> teachers, ArrayList<Admin
 
     }
     public void  actionPerformed(ActionEvent e){
+        if(App.departmentSelector.getSelectedIndex()==0||nameTF.equals("")||pwdTf.getText().equals("")){
+            App.showmessage("All Fields are mandatory!");
+            return;
+        }
+        
         String name=nameTF.getText();
         String pwd=pwdTf.getText();
         String confirm=confirmPwdTf.getText();
+        if(!(validateInfo(pwd))){
+            return;
+        }
         if(!(confirm.equals(pwd))){
             pwdTf.setText(" ");
             confirmPwdTf.setText(" ");
@@ -107,7 +139,7 @@ SignUp(ArrayList<Student> students, ArrayList<Teacher> teachers, ArrayList<Admin
         }
         else{
              if(role.equals("Student")){
-                Student newStudent = new Student(name, pwd, department);
+                Student newStudent = new Student(name, pwd, department,studentBatch);
                 students.add(newStudent);
                 LogInForm logInForm = new LogInForm(students, teachers, admins, role);
              }
@@ -129,7 +161,38 @@ SignUp(ArrayList<Student> students, ArrayList<Teacher> teachers, ArrayList<Admin
     }
     public void itemStateChanged(ItemEvent e){
         if(e.getSource().equals(App.departmentSelector)){
+            
             department=App.departmentNames[App.departmentSelector.getSelectedIndex()];
         }
+        if(e.getSource().equals(App.batchSelector)){
+            studentBatch=App.batch[App.batchSelector.getSelectedIndex()];
+        }
+    }
+    private boolean validateInfo(String pwd){
+        if(role.equals("Student")){
+            for(Student s:students){
+               if(s.userPassword.equals(pwd)){
+                App.showmessage("Password  already taken please use different password!");
+                return false;
+               }
+            }
+        }
+        if(role.equals("Admin")){
+            for(Admin s:admins){
+              if(s.userPassword.equals(pwd)){
+                App.showmessage("Password  already taken please use different password!");
+                return false;
+               }
+            }
+        }
+        if(role.equals("Teacher")){
+            for(Teacher s:teachers){
+               if(s.userPassword.equals(pwd)){
+                App.showmessage("Password  already taken please use different password!");
+                return false;
+               }
+            }
+        }
+       return true;
     }
 }

@@ -211,16 +211,18 @@ public class TeacherDashboard implements ActionListener,ItemListener {
         lowerViewPanel.revalidate();
         showStudents.addActionListener(new ActionListener() {
           public void actionPerformed(ActionEvent e){
-            for(Student s:students){
-              boolean hasreg=false;
-              for(int i=0;i<s.courses.length;i++){
-                  if(App.availablecourses[selectedCourseIndex+1].equals(s.courses[i].courseName))
-                  hasreg=true;break;
-              }
-              if(hasreg){
-                name=new JLabel(s.userName);
-                batch=new JLabel(s.batch);
-                deg=new JLabel(s.degProgram);
+           if(selectedCourseIndex==-1||selectedDateIndex==-1){
+            App.showmessage("Please specify Course and Date First!");
+            return;
+           }
+                lowerViewPanel.removeAll();
+            for(int j=0;j<students.size();j++){
+              for(int i=0;i<students.get(j).courses.length;i++)
+              {
+                if(App.availablecourses[selectedCourseIndex+1].equals(students.get(j).courses[i].courseName)){
+                name=new JLabel(students.get(j).userName);
+                batch=new JLabel(students.get(j).batch);
+                deg=new JLabel(students.get(j).degProgram);
                JButton  presentBtn=new JButton("Present");
                JButton absentBtn=new JButton("Absent");
                JButton resetBtn=new JButton("Reset");
@@ -239,17 +241,17 @@ public class TeacherDashboard implements ActionListener,ItemListener {
                 App.styleBtn(presentBtn); 
                 App.styleBtn(absentBtn);
                 App.styleBtn(resetBtn);
-                linePanel.add(presentBtn);  presentBtn.addActionListener(new buttonHandler(presentBtn,absentBtn,resetBtn,s));
-                linePanel.add(absentBtn);  absentBtn.addActionListener(new buttonHandler(presentBtn, absentBtn,resetBtn,s));
-                linePanel.add(resetBtn); resetBtn.addActionListener(new buttonHandler(presentBtn, absentBtn, resetBtn, s));
+                linePanel.add(presentBtn);  presentBtn.addActionListener(new buttonHandler(presentBtn,absentBtn,resetBtn,students.get(j)));
+                linePanel.add(absentBtn);  absentBtn.addActionListener(new buttonHandler(presentBtn, absentBtn,resetBtn,students.get(j)));
+                linePanel.add(resetBtn); resetBtn.addActionListener(new buttonHandler(presentBtn, absentBtn, resetBtn, students.get(j)));
+                linePanel.revalidate();
                 lowerViewPanel.add(linePanel);
-                lowerViewPanel.revalidate();  
-              }
-              else {
-                continue;
-              }
-                 
+                lowerViewPanel.revalidate(); 
+                   i=students.get(j).courses.length;
+                  }
+              }        
          } 
+         lowerViewPanel.revalidate();
         
        
           }
@@ -265,7 +267,7 @@ public class TeacherDashboard implements ActionListener,ItemListener {
       if(e.getSource().equals(courseSelector)){
            selectedCourseIndex=courseSelector.getSelectedIndex()-1;
       }
-      else if(e.getSource().equals(dateSelector)){
+      if(e.getSource().equals(dateSelector)){
          selectedDateIndex=dateSelector.getSelectedIndex()-1;
         }
       
